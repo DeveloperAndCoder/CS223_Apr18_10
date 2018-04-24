@@ -774,6 +774,8 @@ public:
     {
         ReturnDate = "";
     }
+    BookIssued(string BookId, string BookName, string Author, bool status, string IssueDate, string ReturnDate, int max_days, int fine, int finepaid, bool renew):
+    BookId(BookId), BookName(BookName), Author(Author), Status(status), IssueDate(IssueDate), ReturnDate(ReturnDate), max_days(max_days), Fine(fine), FinePaid(finepaid), renew(renew){}
     BookIssued(Resource* Res, int max_days)
     {
         BookIssued::max_days = max_days;
@@ -926,10 +928,19 @@ long long BookIssued::CalculateFine()
             cur_day = 1;
             cur_mon++;
         }
+        else if(cur_day == 32)
+        {
+            cur_day = 1;
+            cur_mon++;
+        }
+        if(cur_mon == 13)
+        {
+            cur_mon = 1;
+            cur_year++;
+        }
         if(days_kept == 1300)
             break;
     }
-
     if(undo)
     {
         ReturnDate = "";
@@ -3168,12 +3179,12 @@ void loaddata(Library &lib)
                 case 10:
                     {
                         int j = 0;
+                        string BookId, BookName, Author, IssuedDate, ReturnDate;
+                        bool Status, renew;
+                        long long Fine=0, FinePaid=0;
+                        int max_days;
                         while(getline(read, data))
                         {
-                            string BookId, BookName, Author, IssuedDate, ReturnDate;
-                            bool Status, renew;
-                            long long Fine=0, FinePaid=0;
-                            int max_days;
                             if(data != "\\history")
                             {
                                 ++j;
@@ -3238,7 +3249,7 @@ void loaddata(Library &lib)
                                         }
                                         break;
                                     }
-                                    history_phd.push_back(new BookIssued(BookId, BookName, Author, Status, IssuedDate, max_days ));
+                                    history_phd.push_back(new BookIssued(BookId, BookName, Author, Status, IssuedDate, ReturnDate, max_days, Fine, FinePaid, renew));
                                 }
                             }
                                 else
@@ -3340,12 +3351,12 @@ void loaddata(Library &lib)
                 case 10:
                     {
                         int j = 0;
+                        string BookId, BookName, Author, IssuedDate, ReturnDate;
+                        bool Status, renew;
+                        long long Fine=0, FinePaid=0;
+                        int max_days;
                         while(getline(read, data))
                         {
-                            string BookId, BookName, Author, IssuedDate, ReturnDate;
-                            bool Status, renew;
-                            long long Fine=0, FinePaid=0;
-                            int max_days;
                             if(data != "\\history")
                             {
                                 ++j;
@@ -3410,7 +3421,7 @@ void loaddata(Library &lib)
                                         }
                                         break;
                                     }
-                                    history_nonphd.push_back(new BookIssued(BookId, BookName, Author, Status, IssuedDate, max_days ));
+                                    history_nonphd.push_back(new BookIssued(BookId, BookName, Author, Status, IssuedDate, ReturnDate, max_days, Fine, FinePaid, renew));
                                 }
                             }
                             else
@@ -3451,6 +3462,7 @@ void loaddata(Library &lib)
                         break;
                     }
                 ++i;
+               // cout << "data = " << data << " i = " << i << endl;
                 switch(i)
                 {
                 case 1:
@@ -3506,25 +3518,26 @@ void loaddata(Library &lib)
                         }
                         break;
                     }
-
-
                 case 10:
                     {
                         int j = 0;
+                        string BookId, BookName, Author, IssuedDate, ReturnDate;
+                        bool Status, renew;
+                        long long Fine=0, FinePaid=0;
+                        int max_days = 0;
                         while(getline(read, data))
                         {
-                            string BookId, BookName, Author, IssuedDate, ReturnDate;
-                            bool Status, renew;
-                            long long Fine=0, FinePaid=0;
-                            int max_days;
                             if(data != "\\history")
                             {
                                 ++j;
+               //                 cout << data << " " << j << endl;
                                 switch(j)
                                 {
                                 case 1:
                                     {
+                 //                       cout << BookId << " = BookId and data = " << data << endl;
                                         BookId = data;
+                   //                     cout << BookId << " = BookId and data = " << data << endl;
                                         break;
                                     }
                                 case 2:
@@ -3579,9 +3592,18 @@ void loaddata(Library &lib)
                                         {
                                             max_days = max_days*10 + data[k] - '0';
                                         }
+                                        j = 0;
                                         break;
                                     }
-                                    history_faculty.push_back(new BookIssued(BookId, BookName, Author, Status, IssuedDate, max_days ));
+                                }
+                                if(j == 0){
+                     //                   cout << "BookId = " << BookId << endl;
+                                    history_faculty.push_back(new BookIssued(BookId, BookName, Author, Status, IssuedDate, ReturnDate, max_days, Fine, FinePaid, renew));
+                       //             cout << history_faculty.size() << endl;
+                               //     if(!history_faculty.empty())
+                           //             history_faculty[0]->getDetails();
+                             //       else
+                         //               cout << "Empty";
                                 }
                             }
                             else
@@ -3740,10 +3762,10 @@ void loaddata(Library &lib)
                 case 8:
                     {
                         int j = 0;
+                        string Res_id, iss_date;
+                        int iss_for;
                        while(getline(read, data))
                         {
-                            string Res_id, iss_date;
-                            int iss_for;
                             if(data != "\\history")
                             {
                                 ++j;
@@ -3766,11 +3788,12 @@ void loaddata(Library &lib)
                                         {
                                             iss_for  = iss_for*10 + data[j] - '0';
                                         }
+                                        j = 0;
                                         break;
                                     }
-
-                                    history_book.push_back(new IssuedBy(Res_id, iss_date, iss_for ));
                                 }
+                                if(j == 0)
+                                    history_book.push_back(new IssuedBy(Res_id, iss_date, iss_for ));
                             }
                             else
                                 break;
@@ -3852,10 +3875,10 @@ void loaddata(Library &lib)
                 case 8:
                     {
                         int j = 0;
+                        string Res_id, iss_date;
+                        int iss_for;
                        while(getline(read, data))
                         {
-                            string Res_id, iss_date;
-                            int iss_for;
                             if(data != "\\history")
                             {
                                 ++j;
@@ -3878,11 +3901,12 @@ void loaddata(Library &lib)
                                         {
                                             iss_for  = iss_for*10 + data[j] - '0';
                                         }
+                                        j = 0;
                                         break;
                                     }
-
-                                    history_journal.push_back(new IssuedBy(Res_id, iss_date, iss_for ));
                                 }
+                                if(j == 0)
+                                    history_journal.push_back(new IssuedBy(Res_id, iss_date, iss_for ));
                             }
                             else
                                 break;
