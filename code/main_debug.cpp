@@ -224,6 +224,7 @@ void Resource::update_history(string UserId, string IssueDate, bool status, int 
     {
         IssuedBy* issuedby = new IssuedBy(UserId, IssueDate);
         history.push_back(issuedby);
+        issuedby->setDays(days);
         Resource::change_status(status);
         return;
     }
@@ -750,7 +751,7 @@ public:
     void edit_my_profile();
     string getdata()
     {
-        return Member::getdata() + "\n"+"\\Staff" + "\n";
+        return (string)"Staff"+"\n"+Member::getdata() + "\n"+"\\Staff" + "\n";
     }
     //void change_history_status(string ResId, string Date){}
 };
@@ -1221,7 +1222,7 @@ public:
     void edit_my_profile();
     string getdata()
     {
-        return User::getdata()+"\n"+to_string(NumOfJournalsIssued)+"\n"+"\\Faculty";
+        return (string)"Faculty"+"\n"+User::getdata()+"\n"+to_string(NumOfJournalsIssued)+"\n"+"\\Faculty";
     }
 };
 int Faculty::maxBookLimit = 10;
@@ -2624,7 +2625,6 @@ bool Staff::IssueResource(string UserId, string ResourceId, Library &lib)
             resource->getdetails();
             if(resource->getStatus() == false)
             {
-                //cout << "HERE" << endl;
                 cout << resource->getTitle() << " Not Available" << endl;
                 return false;
             }
@@ -3035,6 +3035,8 @@ void Library::setStaffData(vector<Staff*> staff)
 {
     for(int i = 0; i < staff.size(); i++)
     {
+        if(staff[i]->getId() == "Sadmin")
+            continue;
         Library::member.push_back(staff[i]);
         Library::staff.push_back(staff[i]);
     }
@@ -3666,7 +3668,7 @@ void loaddata(Library &lib)
     }
     read.close();
 
-    read.open("data//Resource.txt");
+    read.open("data//Resources.txt");
     string Author, Title, date_of_purchase, sub_name = "", sub_code, publ_date;
     int Edition;
     double Rack_no;
@@ -3725,17 +3727,8 @@ void loaddata(Library &lib)
                     {
                         Rack_no = 0;
                         int j = 0;
-                        while(data[j] != '.')
-                        {
-                            Rack_no  = Rack_no*10 + data[j] - '0';
-                            j++;
-                        }
-                        int i = j;
-                        j++;
-                        while(j != data.length()){
-                            Rack_no += (data[j] - '0')/pow(10,j-i);
-                            j++;
-                        }
+                        bool once = 1;
+                        Rack_no = atof(data.c_str());
                         break;
                     }
                 case 7:
@@ -3846,19 +3839,8 @@ void loaddata(Library &lib)
 
                 case 6:
                     {
-                                                Rack_no = 0;
-                        int j = 0;
-                        while(data[j] != '.')
-                        {
-                            Rack_no  = Rack_no*10 + data[j] - '0';
-                            j++;
-                        }
-                        int i = j;
-                        j++;
-                        while(j != data.length()){
-                            Rack_no += (data[j] - '0')/pow(10,j-i);
-                            j++;
-                        }
+                        Rack_no = 0;
+                        Rack_no = atof(data.c_str());
                         break;
                     }
                 case 7:
